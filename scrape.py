@@ -1,7 +1,6 @@
 # COURSE SCRAPER
 # Oscar Yu 2022 ©
 
-from cgitb import strong
 from bs4 import BeautifulSoup
 import requests
 import json
