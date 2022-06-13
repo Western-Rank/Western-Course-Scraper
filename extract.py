@@ -3,13 +3,15 @@
 # Oscar Yu 2022 ©
 
 import re
-htmlfile = open("academic.html", "r")
+import requests
+
+url = "https://www.westerncalendar.uwo.ca/Courses.cfm?SelectedCalendar=Live&ArchiveID="
+page = requests.get(url)
 
 pattern = re.compile(r"Subject=([A-Z]*)&")
+codes = re.findall(pattern, str(page.content))
 
 file = open("categories.txt", "w")
-codes = re.findall(pattern, htmlfile.read())
 for code in codes:
     file.write(code + "\n")
-htmlfile.close()
 file.close()
