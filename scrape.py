@@ -1,10 +1,13 @@
+# COURSE SCRAPER
+# Oscar Yu 2022 ©
+
 from cgitb import strong
 from bs4 import BeautifulSoup
 import requests
 import json
 import re
 
-file = open("list.txt", "r")
+file = open("categories.txt", "r")
 catList = [line.rstrip("\n") for line in file.readlines()]
 file.close()
 #print(catList)
