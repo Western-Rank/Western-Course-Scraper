@@ -9,6 +9,8 @@ import time
 
 ANIMATE = True
 
+startTime = time.time()
+
 if ANIMATE:
     import itertools
     import threading
@@ -27,14 +29,12 @@ if ANIMATE:
     t.daemon=True
     t.start()
 
-startTime = time.time()
-
 file = open("categories.txt", "r")
 catList = [line.rstrip("\n") for line in file.readlines()]
 file.close()
 #print(catList)
 
-newFile = open("output.json", "w")
+newFile = open("output1.json", "w")
 
 courseList = []
 for cat in catList:
@@ -88,5 +88,5 @@ newFile.close()
 
 if ANIMATE:
     done = True
-    
+
 print(f"\nProcess complete in {round(time.time() - startTime, 2)} seconds")
