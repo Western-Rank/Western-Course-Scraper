@@ -8,7 +8,7 @@ Output of script(s) is a Json file in the following format:
 ```js
 {
   "courses": [{
-    "code": "Computer Science 1027A/B",
+    "code": "COMPSCI 1027A/B",
     "name": "COMPUTER SCIENCE FUNDAMENTALS II",
     "desc": "A continuation for both Computer Science 1025A/B and Computer Science 1026A/B. Data organization and manipulation; abstract data types and their implementations in a modern programming language; lists, stacks, queues, trees; recursion; file handling and storage.",
     "anti": "Computer Science 1037A/B, Computer Science 2121A/B, Digital Humanities 2221A/B."
@@ -23,8 +23,18 @@ Output of script(s) is a Json file in the following format:
 1. Run `extract.py` to update the list of course categories, located in `categories.txt`.
 2. Run `scrape.py` to scrape all current courses related information. Output is written to `output.json`.
 
-### Dependencies
+### Core Dependencies
 - re : Regex
 - bs4 : [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
 - requests : HTTP requests
 - json : Json
+- time : time
+
+#### Optional Dependencies
+The following dependencies are purely for animating a loading bar for longer tasks. To disable functionality and importing of these packages, simply set the `ANIMATE` flag to `False` at the beginning of `scraper.py` and `updateDB.py`.
+- itertools
+- threading
+- sys
+
+### Extra
+For internal use, `updateDB.py` should be acompanied by a `.env` file with database credentials. All necessary packages can be installed with `pip install -r requirements.txt`.
