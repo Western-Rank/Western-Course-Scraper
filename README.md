@@ -1,5 +1,4 @@
-# scraping
-
+# Western Course Scraper
 Python script to scrape all UWO courses on the academic calendar.
 
 ## Output
