@@ -2,29 +2,32 @@
 # Oscar Yu 2022 ©
 
 ANIMATE = True
-SKIP = False
+UPDATE_DB = True
+SKIP_SCRAPE = False
 
+
+# Scraping
 from bs4 import BeautifulSoup
-import psycopg2
+import pandas as pd
 import requests
 import re
 import time
-import pandas as pd
 import os
+# Animation
+import itertools
+import threading
+import sys
+# Database
+import psycopg2
 from dotenv import load_dotenv
-import csv
 load_dotenv()
-
-status = "Loading"
 
 # Record start time
 startTime = time.time()
 
 # Animation
+status = "Loading"
 if ANIMATE:
-    import itertools
-    import threading
-    import sys
     def animate():
         for c in itertools.cycle(['-', '\\', '|', '/']):
             if done:
@@ -38,30 +41,6 @@ if ANIMATE:
     t = threading.Thread(target=animate)
     t.daemon=True
     t.start()
-
-# Load database connection data from env
-hostname = os.environ.get("DB_HOST_NAME")
-port = os.environ.get("DB_PORT")
-dbName = os.environ.get("DB_NAME")
-user = os.environ.get("DB_USER_NAME")
-password = os.environ.get("DB_PASSWORD")
-
-status = "Connecting"
-# Create postgres connection
-conn = psycopg2.connect(
-    host = hostname,
-    port = port,
-    database = dbName,
-    user = user,
-    password = password
-)
-
-# Verify connection
-curr = conn.cursor()
-curr.execute("SELECT version();")
-dbVersion = curr.fetchone()
-curr.close()
-print(f"\n{dbVersion[0]}\n")
 
 # Import categories
 file = open("categories.txt", "r")
@@ -82,7 +61,7 @@ scrapeCount = 0
 status = "Scraping"
 
 for cat in catList:
-    if SKIP:
+    if SKIP_SCRAPE:
         break
     url = f"https://www.westerncalendar.uwo.ca/Courses.cfm?Subject={cat}&SelectedCalendar=Live&ArchiveID="
 
@@ -139,21 +118,44 @@ for cat in catList:
             courses = pd.concat([row,courses.loc[:]], axis = 0).reset_index(drop=True)
         # print()
 
-if not SKIP:
+if not SKIP_SCRAPE:
     status = "Writing to CSV"
     csvFile = open("output.csv", "w")
     courses.to_csv(csvFile, sep="|", header=False, index=False, line_terminator="\n")
     csvFile.close()
 
-status = "Writing to DB"
-csvFile = open("output.csv")
-curr = conn.cursor()
-curr.copy_from(csvFile, "courses", sep="|")
+if UPDATE_DB:
+    # Load database connection data from env
+    hostname = os.environ.get("DB_HOST_NAME")
+    port = os.environ.get("DB_PORT")
+    dbName = os.environ.get("DB_NAME")
+    user = os.environ.get("DB_USER_NAME")
+    password = os.environ.get("DB_PASSWORD")
 
-csvFile.close()
-curr.close()
-conn.commit()
-conn.close()
+    # Create postgres connection
+    status = "Connecting"
+    conn = psycopg2.connect(
+        host = hostname,
+        port = port,
+        database = dbName,
+        user = user,
+        password = password)
+
+    # Verify connection
+    curr = conn.cursor()
+    curr.execute("SELECT version();")
+    dbVersion = curr.fetchone()
+    curr.close()
+    print(f"\n{dbVersion[0]}\n")
+    status = "Writing to DB"
+    csvFile = open("output.csv")
+    curr = conn.cursor()
+    curr.copy_from(csvFile, "courses", sep="|")
+
+    csvFile.close()
+    curr.close()
+    conn.commit()
+    conn.close()
 
 if ANIMATE:
     done = True

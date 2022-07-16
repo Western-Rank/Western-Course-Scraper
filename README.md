@@ -3,38 +3,35 @@
 Python script to scrape all UWO courses on the academic calendar.
 
 ## Output
-Output of script(s) is a Json file in the following format:
+Output of script(s) is a `.csv` file in the following format:
 
 ```js
-{
-  "courses": [{
-    "code": "COMPSCI 1027A/B",
-    "name": "COMPUTER SCIENCE FUNDAMENTALS II",
-    "desc": "A continuation for both Computer Science 1025A/B and Computer Science 1026A/B. Data organization and manipulation; abstract data types and their implementations in a modern programming language; lists, stacks, queues, trees; recursion; file handling and storage.",
-    "anti": "Computer Science 1037A/B, Computer Science 2121A/B, Digital Humanities 2221A/B."
-    "pre": "Computer Science 1025A/B, Computer Science 1026A/B, Data Science 1200A/B, or Engineering Science 1036A/B, (in each case with a mark of at least 65%)."
-    "extra": "3 lecture hours, 1 laboratory/tutorial hour."
-    "loc": "Western Main Campus" 
-  }]
-}
+course_code|course_name|antirequisites|prerequisites|description|location|extra_info
 ```
 
 ## Usage
+All necessary packages can be installed with `pip install -r requirements.txt`.
+
 1. Run `extract.py` to update the list of course categories, located in `categories.txt`.
-2. Run `scrape.py` to scrape all current courses related information. Output is written to `output.json`.
+2. Run `scrape.py` to scrape all current courses related information. Output is written to `output.csv`.
 
-### Core Dependencies
-- re : Regex
+Optional flags for `scrape.py` are as follows.
+- `ANIMATE`: Controls loading animation while process is running. You can turn this this to `False` if you want the fastest possible performance.
+- `UPDATE_DB`: **For internal use**. If valid `.env` file is present, setting this flag to `True` will read `output.csv` and insert into the linked database. 
+- `SKIP_SCRAPE`: Controls whether the scraping process is skipped or not. This should only be used in conjunction with `UPDATE_DB`, when you want to write to the DB from an existing `.csv` file without regenerating it.
+
+## Core Dependencies
+### Scraping
 - bs4 : [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/)
+- pandas : [Pandas](https://github.com/pandas-dev/pandas)
 - requests : HTTP requests
-- json : Json
+- re : Regex
 - time : time
-
-#### Optional Dependencies
-The following dependencies are purely for animating a loading bar for longer tasks. To disable functionality and importing of these packages, simply set the `ANIMATE` flag to `False` at the beginning of `scraper.py` and `updateDB.py`.
+- os : os
+### Loading Animation
 - itertools
 - threading
 - sys
-
-### Extra
-For internal use, `updateDB.py` should be acompanied by a `.env` file with database credentials. All necessary packages can be installed with `pip install -r requirements.txt`.
+### Database
+- psycopg2 : [psychopg2](https://www.psycopg.org/docs/)
+- python-dotenv : [python-dotenv](https://pypi.org/project/python-dotenv/)
