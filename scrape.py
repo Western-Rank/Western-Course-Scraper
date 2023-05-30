@@ -1,25 +1,25 @@
 # COURSE SCRAPER
 # Oscar Yu 2022 ©
 
+from dotenv import load_dotenv
+import psycopg2
+import sys
+import threading
+import itertools
+import os
+import time
+import re
+import requests
+import pandas as pd
+from bs4 import BeautifulSoup
 ANIMATE = True
 UPDATE_DB = True
 SKIP_SCRAPE = False
 
 
 # Scraping
-from bs4 import BeautifulSoup
-import pandas as pd
-import requests
-import re
-import time
-import os
 # Animation
-import itertools
-import threading
-import sys
 # Database
-import psycopg2
-from dotenv import load_dotenv
 load_dotenv()
 
 # Record start time
@@ -32,14 +32,15 @@ if ANIMATE:
         for c in itertools.cycle(['-', '\\', '|', '/']):
             if done:
                 break
-            sys.stdout.write(f'\r{status} {c}' + f' Time elapsed: {round(time.time() - startTime, 2)} seconds')
+            sys.stdout.write(
+                f'\r{status} {c}' + f' Time elapsed: {round(time.time() - startTime, 2)} seconds')
             sys.stdout.flush()
             time.sleep(0.1)
         sys.stdout.write('\rDone!     ')
-    
+
     done = False
     t = threading.Thread(target=animate)
-    t.daemon=True
+    t.daemon = True
     t.start()
 
 # Import categories
@@ -49,10 +50,10 @@ file.close()
 
 # Create pandas dataframe
 courses = pd.DataFrame(columns=[
-    "course_code", 
-    "course_name", 
-    "antirequisites", 
-    "prerequisites", 
+    "course_code",
+    "course_name",
+    "antirequisites",
+    "prerequisites",
     "description",
     "location",
     "extra_info"])
@@ -68,8 +69,10 @@ for cat in catList:
     page = requests.get(url)
     soup = BeautifulSoup(page.text, "html.parser")
     for panel in soup.find_all(class_="panel-default")[2:]:
-        title = panel.find_all(class_="courseTitleNoBlueLink")[0].get_text().strip()
-        desc = panel.find_all(class_="col-xs-12")[0].get_text().strip().replace("\n", "").replace("\r", "")
+        title = panel.find_all(class_="courseTitleNoBlueLink")[
+            0].get_text().strip()
+        desc = panel.find_all(
+            class_="col-xs-12")[0].get_text().strip().replace("\n", "").replace("\r", "")
         location = panel.find_all("img")[0]["alt"]
 
         # check for anti
@@ -80,11 +83,14 @@ for cat in catList:
             if child.find_all("strong"):
                 strong = child.find_all("strong")[0].get_text()
                 if strong == "Antirequisite(s):":
-                    antireqs = child.get_text().replace("Antirequisite(s):", "").strip().replace("\n", "").replace("\r", "")
+                    antireqs = child.get_text().replace(
+                        "Antirequisite(s):", "").strip().replace("\n", "").replace("\r", "")
                 elif strong == "Prerequisite(s):":
-                    prereqs = child.get_text().replace("Prerequisite(s):", "").strip().replace("\n", "").replace("\r", "")
+                    prereqs = child.get_text().replace(
+                        "Prerequisite(s):", "").strip().replace("\n", "").replace("\r", "")
                 elif strong == "Extra Information:":
-                    extra = child.get_text().replace("Extra Information:", "").strip().replace("\n", "").replace("\r", "")
+                    extra = child.get_text().replace("Extra Information:",
+                                                     "").strip().replace("\n", "").replace("\r", "")
 
         # parse title
         codePattern = re.compile(r"([0-9]{4}[A-Z/]*) ")
@@ -94,13 +100,14 @@ for cat in catList:
         if len(code) == 0:
             code = re.findall(altPattern, title)
         code = code[0]
-        name = re.findall(namePattern, title)[0] if re.findall(namePattern, title) else ""
-        
+        name = re.findall(namePattern, title)[
+            0] if re.findall(namePattern, title) else ""
+
         code = cat + " " + code
 
         # look for existing code in dataframe
         if code in courses["course_code"].values:
-            c = courses["course_code"]==code
+            c = courses["course_code"] == code
             if location == "Western Main Campus":
                 courses.loc[c, "prerequisites"] = prereqs.replace("\n", "")
             courses.loc[c, "location"] += f",{location}"
@@ -108,20 +115,22 @@ for cat in catList:
 
         else:
             row = pd.DataFrame({
-                "course_code":code,
-                "course_name":name, 
-                "antirequisites":antireqs,
-                "prerequisites":prereqs,
-                "description":desc,
-                "location":location,
-                "extra_info":extra}, index=[0])
-            courses = pd.concat([row,courses.loc[:]], axis = 0).reset_index(drop=True)
+                "course_code": code,
+                "course_name": name,
+                "antirequisites": antireqs,
+                "prerequisites": prereqs,
+                "description": desc,
+                "location": location,
+                "extra_info": extra}, index=[0])
+            courses = pd.concat([row, courses.loc[:]],
+                                axis=0).reset_index(drop=True)
         # print()
 
 if not SKIP_SCRAPE:
     status = "Writing to CSV"
     csvFile = open("output.csv", "w")
-    courses.to_csv(csvFile, sep="|", header=False, index=False, line_terminator="\n")
+    courses.to_csv(csvFile, sep="|", header=False,
+                   index=False, line_terminator="\n")
     csvFile.close()
 
 if UPDATE_DB:
@@ -135,11 +144,11 @@ if UPDATE_DB:
     # Create postgres connection
     status = "Connecting"
     conn = psycopg2.connect(
-        host = hostname,
-        port = port,
-        database = dbName,
-        user = user,
-        password = password)
+        host=hostname,
+        port=port,
+        database=dbName,
+        user=user,
+        password=password)
 
     # Verify connection
     curr = conn.cursor()
