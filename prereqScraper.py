@@ -7,6 +7,33 @@ catList = [line.rstrip("\n") for line in file.readlines()]
 file.close()
 SKIP_SCRAPE = False
 
+
+def storeInDatabase(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink):
+    print("storing...\n{")
+    print("code:", code)
+    if prereqs:
+        print("prereqs_text: ", prereqs)
+        print("prereqs: ", prereqsLink)
+    if antireqs:
+        print("antireqs_text: ", antireqs)
+        print("antireqs: ", antireqsLink)
+    if coreqs:
+        print("coreqs_text: ", coreqs)
+        print("coreqs: ", coreqsLink)
+    if precoreqs:
+        print("precoreqs_text: ", precoreqs)
+        print("precoreqs: ", precoreqsLink)
+    print("}")
+    return
+
+
+def formatLink(link):
+    link = link.strip(" ")
+    link = link.strip(".")
+    link = link.strip(",")
+    return re.sub('.,', '', link)
+
+
 courses = pd.DataFrame(columns=[
     "course_code",
     "course_name",
@@ -16,7 +43,7 @@ courses = pd.DataFrame(columns=[
     "location",
     "extra_info"])
 
-for cat in catList:
+for cat in catList[61:]:
     print(cat)
     if SKIP_SCRAPE:
         break
@@ -29,6 +56,10 @@ for cat in catList:
         antireqs = []
         coreqs = []
         preAndCoreqs = []
+        prereqsLink = []  # [string, link?, bold?]
+        antireqsLink = []
+        coreqsLink = []
+        preAndCoreqsLink = []
         coreqFlag = False
         pcreqFlag = False
         title = panel.find_all(class_="courseTitleNoBlueLink")[
@@ -49,6 +80,8 @@ for cat in catList:
                                 if type(req) == Tag:
                                     if req.name == "a":
                                         reqTraits[1] = True
+                                        antireqsLink.append(
+                                            formatLink(reqTraits[0]))
                                 antireqs.append(reqTraits)
                 elif child.find_all("strong")[0].get_text() == "Prerequisite(s):":
                     for item in child.children:
@@ -72,16 +105,27 @@ for cat in catList:
                                     raise Exception("BOTH FLAGS ACTIVE")
                                 elif pcreqFlag:
                                     preAndCoreqs.append(reqTraits)
+                                    if reqTraits[1]:
+                                        preAndCoreqsLink.append(
+                                            formatLink(reqTraits[0]))
                                 elif coreqFlag:
+                                    if reqTraits[1]:
+                                        coreqsLink.append(
+                                            formatLink(reqTraits[0]))
                                     coreqs.append(reqTraits)
                                 else:
+                                    if reqTraits[1]:
+                                        prereqsLink.append(
+                                            formatLink(reqTraits[0]))
                                     prereqs.append(reqTraits)
-        # if antireqs:
-        #     print("ANTI", antireqs)
-        # if prereqs:
-        #     print("PRE", prereqs)
-        # if coreqs:
-        #     print("CO", coreqs)
-        # if preAndCoreqs:
-        #     print("PRECO", preAndCoreqs)
-        # print("="*20)
+        codePattern = re.compile(r"([0-9]{4}[A-Z/]*) ")
+        altPattern = re.compile(r"([0-9]{4}[A-Z/]*)")
+        code = re.findall(codePattern, title)
+        if len(code) == 0:
+            code = re.findall(altPattern, title)
+        code = code[0]
+        code = cat + " " + code
+        storeInDatabase(code=code, prereqs=prereqs, antireqs=antireqs,
+                        coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink)
+        print("="*20)
+    break
