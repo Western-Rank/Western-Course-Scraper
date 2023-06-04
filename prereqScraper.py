@@ -31,7 +31,7 @@ def formatLink(link):
     link = link.strip(" ")
     link = link.strip(".")
     link = link.strip(",")
-    return re.sub('.,', '', link)
+    return link
 
 
 courses = pd.DataFrame(columns=[
@@ -43,7 +43,7 @@ courses = pd.DataFrame(columns=[
     "location",
     "extra_info"])
 
-for cat in catList[61:]:
+for cat in catList[43:]:
     print(cat)
     if SKIP_SCRAPE:
         break
@@ -69,7 +69,8 @@ for cat in catList[61:]:
         location = panel.find_all("img")[0]["alt"]
         for child in panel.find_all(class_="col-xs-12"):
             if child.find_all("strong"):
-                if child.find_all("strong")[0].get_text() == "Antirequisite(s):":
+                strongText = child.find_all("strong")[0].get_text()
+                if strongText == "Antirequisite(s):":
                     for item in child.children:
                         if hasattr(item, "children"):
                             for req in item.children:
@@ -82,8 +83,9 @@ for cat in catList[61:]:
                                         reqTraits[1] = True
                                         antireqsLink.append(
                                             formatLink(reqTraits[0]))
-                                antireqs.append(reqTraits)
-                elif child.find_all("strong")[0].get_text() == "Prerequisite(s):":
+                                antireqs.append(
+                                    {"text": reqTraits[0], "isLink": reqTraits[1]})
+                elif strongText == "Prerequisite(s):" or "Corequisite(s):" in strongText:
                     for item in child.children:
                         if hasattr(item, "children"):
                             for req in item.children:
@@ -104,7 +106,8 @@ for cat in catList[61:]:
                                     print(title + " EXCEPTION")
                                     raise Exception("BOTH FLAGS ACTIVE")
                                 elif pcreqFlag:
-                                    preAndCoreqs.append(reqTraits)
+                                    preAndCoreqs.append(
+                                        {"text": reqTraits[0], "isLink": reqTraits[1]})
                                     if reqTraits[1]:
                                         preAndCoreqsLink.append(
                                             formatLink(reqTraits[0]))
@@ -112,12 +115,14 @@ for cat in catList[61:]:
                                     if reqTraits[1]:
                                         coreqsLink.append(
                                             formatLink(reqTraits[0]))
-                                    coreqs.append(reqTraits)
+                                    coreqs.append(
+                                        {"text": reqTraits[0], "isLink": reqTraits[1]})
                                 else:
                                     if reqTraits[1]:
                                         prereqsLink.append(
                                             formatLink(reqTraits[0]))
-                                    prereqs.append(reqTraits)
+                                    prereqs.append(
+                                        {"text": reqTraits[0], "isLink": reqTraits[1]})
         codePattern = re.compile(r"([0-9]{4}[A-Z/]*) ")
         altPattern = re.compile(r"([0-9]{4}[A-Z/]*)")
         code = re.findall(codePattern, title)
