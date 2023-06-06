@@ -125,9 +125,7 @@ for cat in catList[43:]:
                             for req in item.children:
                                 reqTraits = [req.get_text().strip().replace(
                                     "\n", "").replace("\r", ""), False]
-                                if not reqTraits[0]:
-                                    continue
-                                if "Prerequisite(s):" in reqTraits[0]:
+                                if not reqTraits[0] and "Prerequisite(s):" in reqTraits[0]:
                                     continue
                                 if "Pre-or Corequisite(s)" in reqTraits[0]:
                                     pcreqFlag = True
