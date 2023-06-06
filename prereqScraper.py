@@ -1,15 +1,16 @@
-from dotenv import load_dotenv
-import psycopg2
-import os
+# from dotenv import load_dotenv
+# import psycopg2
+# import os
 from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
 import requests
 import re
-from databaseFunctions import *
+# from databaseFunctions import *
 file = open("western-course-scraper/categories.txt", "r")
 catList = [line.rstrip("\n") for line in file.readlines()]
 file.close()
 
+""" 
 load_dotenv()
 
 hostname = os.environ.get("DB_HOST_NAME")
@@ -31,6 +32,7 @@ conn = psycopg2.connect(
 
 # Query to retrieve table names from the database catalog
 cursor = conn.cursor()
+ """
 
 
 def storeInDatabase(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink):
@@ -61,6 +63,27 @@ def storeInDatabase(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, ant
     return
 
 
+def printResults(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink):
+    print("storing...\n{")
+    print("code:", code)
+    if prereqs:
+        print("prereqs_text: ", prereqs)
+        print("prereqs: ", prereqsLink)
+
+    if antireqs:
+        print("antireqs_text: ", antireqs)
+        print("antireqs: ", antireqsLink)
+    if coreqs:
+        print("coreqs_text: ", coreqs)
+        print("coreqs: ", coreqsLink)
+    if precoreqs:
+        print("precoreqs_text: ", precoreqs)
+        print("precoreqs: ", precoreqsLink)
+
+    print("}")
+    return
+
+
 def formatLink(link):
     link = link.strip(" ")
     link = link.strip(".")
@@ -79,8 +102,6 @@ courses = pd.DataFrame(columns=[
 
 for cat in catList[43:]:
     print(cat)
-    if SKIP_SCRAPE:
-        break
     url = f"https://www.westerncalendar.uwo.ca/Courses.cfm?Subject={cat}&SelectedCalendar=Live&ArchiveID="
 
     page = requests.get(url)
@@ -110,10 +131,12 @@ for cat in catList[43:]:
                             for req in item.children:
                                 reqTraits = [req.get_text().strip().replace(
                                     "\n", "").replace("\r", ""), False]
-                                if reqTraits[0] and type(req) == Tag and req.name == "a":
+                                if not reqTraits[0]:
+                                    continue
+                                if type(req) == Tag and req.name == "a":
                                     reqTraits[1] = True
-                                        antireqsLink.append(
-                                            formatLink(reqTraits[0]))
+                                    antireqsLink.append(
+                                        formatLink(reqTraits[0]))
                                 antireqs.append(
                                     {"text": reqTraits[0], "isLink": reqTraits[1]})
                 elif strongText == "Prerequisite(s):" or "Corequisite(s):" in strongText:
@@ -159,11 +182,13 @@ for cat in catList[43:]:
             code = re.findall(altPattern, title)
         code = code[0]
         code = cat + " " + code
-        storeInDatabase(code=code, prereqs=prereqs, antireqs=antireqs,
-                        coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink)
+        # storeInDatabase(code=code, prereqs=prereqs, antireqs=antireqs,
+        #                 coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink
+        printResults(code=code, prereqs=prereqs, antireqs=antireqs,
+                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink)
+
         print("="*20)
-        break
     break
 
-cursor.close()
-conn.close()
+# cursor.close()
+# conn.close()
