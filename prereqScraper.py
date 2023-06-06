@@ -110,11 +110,8 @@ for cat in catList[43:]:
                             for req in item.children:
                                 reqTraits = [req.get_text().strip().replace(
                                     "\n", "").replace("\r", ""), False]
-                                if not reqTraits[0]:
-                                    continue
-                                if type(req) == Tag:
-                                    if req.name == "a":
-                                        reqTraits[1] = True
+                                if reqTraits[0] and type(req) == Tag and req.name == "a":
+                                    reqTraits[1] = True
                                         antireqsLink.append(
                                             formatLink(reqTraits[0]))
                                 antireqs.append(
