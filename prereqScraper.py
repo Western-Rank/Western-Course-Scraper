@@ -35,9 +35,13 @@ cursor = conn.cursor()
  """
 
 
-def storeInDatabase(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink):
+def storeInDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location):
     print("storing...\n{")
-    print("code:", code)
+
+    print("name:", name)  # STORE NAME IN DB
+
+    print("code:", code)  # STORE CODE IN DB
+
     if prereqs:
         print("prereqs_text: ", prereqs)
         print("prereqs: ", prereqsLink)
@@ -59,12 +63,18 @@ def storeInDatabase(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, ant
         addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
                        columnName="precorequisites_text", data=precoreqs)
 
+    print("description:", desc)  # STORE DESC IN DB
+
+    print("location:", location)  # STORE LOC IN DB
+
+    print()
+
     print("}")
     return
 
 
-def printResults(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink):
-    print("storing...\n{")
+def printResults(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location):
+    print("name:", name)
     print("code:", code)
     if prereqs:
         print("prereqs_text: ", prereqs)
@@ -79,7 +89,8 @@ def printResults(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antire
     if precoreqs:
         print("precoreqs_text: ", precoreqs)
         print("precoreqs: ", precoreqsLink)
-
+    print("description:", desc)
+    print("location:", location)
     print("}")
     return
 
@@ -100,7 +111,7 @@ courses = pd.DataFrame(columns=[
     "location",
     "extra_info"])
 
-for cat in catList[43:]:
+for cat in catList[3:]:
     print(cat)
     url = f"https://www.westerncalendar.uwo.ca/Courses.cfm?Subject={cat}&SelectedCalendar=Live&ArchiveID="
 
@@ -184,10 +195,11 @@ for cat in catList[43:]:
         code = cat + " " + code
         # storeInDatabase(code=code, prereqs=prereqs, antireqs=antireqs,
         #                 coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink
-        printResults(code=code, prereqs=prereqs, antireqs=antireqs,
-                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink)
+        printResults(name=title, code=code, prereqs=prereqs, antireqs=antireqs,
+                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink, desc=desc, location=location)
 
         print("="*20)
+
     break
 
 # cursor.close()
