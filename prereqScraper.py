@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
 import requests
 import re
-# from databaseFunctions import *
+from databaseFunctions import *
 file = open("western-course-scraper/categories.txt", "r")
 catList = [line.rstrip("\n") for line in file.readlines()]
 file.close()
@@ -33,44 +33,6 @@ conn = psycopg2.connect(
 # Query to retrieve table names from the database catalog
 cursor = conn.cursor()
  """
-
-
-def storeInDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location):
-    print("storing...\n{")
-
-    print("name:", name)  # STORE NAME IN DB
-
-    print("code:", code)  # STORE CODE IN DB
-
-    if prereqs:
-        print("prereqs_text: ", prereqs)
-        print("prereqs: ", prereqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="prerequisites_text", data=prereqs)
-    if antireqs:
-        print("antireqs_text: ", antireqs)
-        print("antireqs: ", antireqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="antirequisites_text", data=antireqs)
-    if coreqs:
-        print("coreqs_text: ", coreqs)
-        print("coreqs: ", coreqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="corequisites_text", data=coreqs)
-    if precoreqs:
-        print("precoreqs_text: ", precoreqs)
-        print("precoreqs: ", precoreqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="precorequisites_text", data=precoreqs)
-
-    print("description:", desc)  # STORE DESC IN DB
-
-    print("location:", location)  # STORE LOC IN DB
-
-    print()
-
-    print("}")
-    return
 
 
 def printResults(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location):
