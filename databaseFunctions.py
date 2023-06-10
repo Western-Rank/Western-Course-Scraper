@@ -25,21 +25,16 @@ def addJsonToTable(cursor, conn, courseCode, columnName, data):
     conn.commit()
 
 
-def insertCourseInDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location):
-    print("storing...\n{")
-
-    print("name:", name)  # STORE NAME IN DB
-
-    print("code:", code)  # STORE CODE IN DB
-
-    insert_query = f'INSERT INTO Courses (name, code, prereqs, antireqs, coreqs) VALUES (%s, %s, %s, %s, %s);'
-
-
-    print("description:", desc)  # STORE DESC IN DB
-
-    print("location:", location)  # STORE LOC IN DB
-    print("}")
-    return
+def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, conn, cursor):
+    insert_query = f'INSERT INTO Courses (name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location) VALUES (%s, %s, %s, %s, %s);'
+    cursor.execute(insert_query, (
+        course_values["name"],
+        course_values["code"],
+        course_values["prereqs"],
+        course_values["antireqs"],
+        course_values["coreqs"]
+    ))
+    conn.commit()
 
 
 """
