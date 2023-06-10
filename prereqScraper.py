@@ -1,6 +1,6 @@
-from dotenv import load_dotenv
-import psycopg2
-import os
+# from dotenv import load_dotenv
+# import psycopg2
+# import os
 from bs4 import BeautifulSoup, NavigableString, Tag
 import pandas as pd
 import requests
@@ -10,6 +10,7 @@ file = open("western-course-scraper/categories.txt", "r")
 catList = [line.rstrip("\n") for line in file.readlines()]
 file.close()
 
+""" 
 load_dotenv()
 
 hostname = os.environ.get("DB_HOST_NAME")
@@ -31,32 +32,27 @@ conn = psycopg2.connect(
 
 # Query to retrieve table names from the database catalog
 cursor = conn.cursor()
+ """
 
 
-def storeInDatabase(code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink):
-    print("storing...\n{")
+def printResults(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location):
+    print("name:", name)
     print("code:", code)
     if prereqs:
         print("prereqs_text: ", prereqs)
         print("prereqs: ", prereqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="prerequisites_text", data=prereqs)
+
     if antireqs:
         print("antireqs_text: ", antireqs)
         print("antireqs: ", antireqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="antirequisites_text", data=antireqs)
     if coreqs:
         print("coreqs_text: ", coreqs)
         print("coreqs: ", coreqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="corequisites_text", data=coreqs)
     if precoreqs:
         print("precoreqs_text: ", precoreqs)
         print("precoreqs: ", precoreqsLink)
-        addJsonToTable(cursor=cursor, conn=conn, courseCode=code,
-                       columnName="precorequisites_text", data=precoreqs)
-
+    print("description:", desc)
+    print("location:", location)
     print("}")
     return
 
@@ -77,10 +73,8 @@ courses = pd.DataFrame(columns=[
     "location",
     "extra_info"])
 
-for cat in catList[43:]:
+for cat in catList[3:]:
     print(cat)
-    if SKIP_SCRAPE:
-        break
     url = f"https://www.westerncalendar.uwo.ca/Courses.cfm?Subject={cat}&SelectedCalendar=Live&ArchiveID="
 
     page = requests.get(url)
@@ -112,11 +106,10 @@ for cat in catList[43:]:
                                     "\n", "").replace("\r", ""), False]
                                 if not reqTraits[0]:
                                     continue
-                                if type(req) == Tag:
-                                    if req.name == "a":
-                                        reqTraits[1] = True
-                                        antireqsLink.append(
-                                            formatLink(reqTraits[0]))
+                                if type(req) == Tag and req.name == "a":
+                                    reqTraits[1] = True
+                                    antireqsLink.append(
+                                        formatLink(reqTraits[0]))
                                 antireqs.append(
                                     {"text": reqTraits[0], "isLink": reqTraits[1]})
                 elif strongText == "Prerequisite(s):" or "Corequisite(s):" in strongText:
@@ -125,9 +118,7 @@ for cat in catList[43:]:
                             for req in item.children:
                                 reqTraits = [req.get_text().strip().replace(
                                     "\n", "").replace("\r", ""), False]
-                                if not reqTraits[0]:
-                                    continue
-                                if "Prerequisite(s):" in reqTraits[0]:
+                                if not reqTraits[0] and "Prerequisite(s):" in reqTraits[0]:
                                     continue
                                 if "Pre-or Corequisite(s)" in reqTraits[0]:
                                     pcreqFlag = True
@@ -164,11 +155,14 @@ for cat in catList[43:]:
             code = re.findall(altPattern, title)
         code = code[0]
         code = cat + " " + code
-        storeInDatabase(code=code, prereqs=prereqs, antireqs=antireqs,
-                        coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink)
+        # storeInDatabase(code=code, prereqs=prereqs, antireqs=antireqs,
+        #                 coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink
+        printResults(name=title, code=code, prereqs=prereqs, antireqs=antireqs,
+                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=prereqsLink, coreqsLink=coreqsLink, antireqsLink=antireqsLink, precoreqsLink=preAndCoreqsLink, desc=desc, location=location)
+
         print("="*20)
-        break
+
     break
 
-cursor.close()
-conn.close()
+# cursor.close()
+# conn.close()
