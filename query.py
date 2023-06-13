@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 import psycopg2
 import os
 from pprint import pprint
+import json
 
 load_dotenv()
 
@@ -25,17 +26,16 @@ conn = psycopg2.connect(
 # Query to retrieve table names from the database catalog
 cursor = conn.cursor()
 
+emptyJson = json.dumps({})
+
 # Execute a query to fetch the column names of a table
 table_name = "Course"
-query = f"SELECT column_name FROM information_schema.columns WHERE table_name = '{table_name}'"
-cursor.execute(query)
+updateCourseInfo_query = f'UPDATE "Course" SET course_name = %s, prerequisites_text = %s, antirequisites_text = %s, corequisites_text = %s, precorequisites_text = %s, description = %s, location = %s, extra_info = %s WHERE course_code = %s;'
+cursor.execute(updateCourseInfo_query, (
+    "INDIGENOUS WOMEN IN THE ARTS IN CANADA: CULTURAL TRADITIONS, SURVIVAL, AND COLONIAL RESISTANCE", emptyJson, emptyJson, emptyJson, emptyJson, "", "", "", "AH 2634F/G"
+))
 
-# Fetch all the column names from the result set
-column_names = [row[0] for row in cursor.fetchall()]
-print("??")
-# Print the column names
-for column_name in column_names:
-    print(column_name)
+conn.commit()
 
 # Close the cursor and connection
 cursor.close()

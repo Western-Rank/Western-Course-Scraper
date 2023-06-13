@@ -12,7 +12,28 @@ dbName = os.environ.get("DB_NAME")
 user = os.environ.get("DB_USER_NAME")
 password = os.environ.get("DB_PASSWORD")
 
-print(hostname, port, dbName, user)
+
+errorCourses = """
+(AH 2634F/G)
+(BIOCHEM 4484E)
+(EPID 4310A/B)
+(GSWS 2290F/G)
+(GSWS 2291F/G)
+(GSWS 2440F/G)
+(GSWS 3440F/G)
+(GSWS 3460F/G)
+(INDIGSTU 4806F/G)
+(INDIGSTU 2676A/B)
+(INDIGSTU 2682F/G)
+(INDIGSTU 2807F/G)
+(HISTORY 4806F/G)
+(KINESIOL 4301F/G)
+(NEURO 3996F/G)
+(NEURO 3996F/G)
+(PSYCHOL 4873E)
+(PSYCHOL 4874E)
+(SA 2676A/B)
+"""
 
 
 def addJsonToTable(cursor, conn, courseCode, columnName, data):
@@ -25,11 +46,74 @@ def addJsonToTable(cursor, conn, courseCode, columnName, data):
     conn.commit()
 
 
-def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, conn, cursor):
-    insert_query = f'INSERT INTO Courses (name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location) VALUES (%s, %s, %s, %s, %s);'
-    cursor.execute(insert_query, (
-        name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra
+def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, insertRequisites, conn, cursor):
+    prereqJson = json.dumps(prereqs)
+    antireqJson = json.dumps(antireqs)
+    coreqJson = json.dumps(coreqs)
+    precoreqJson = json.dumps(precoreqs)
+
+#  insert_query = f'INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);'
+
+    updateCourseInfo_query = f'UPDATE "Course" SET course_name = %s, prerequisites_text = %s, antirequisites_text = %s, corequisites_text = %s, precorequisites_text = %s, description = %s, location = %s, extra_info = %s WHERE course_code = %s;'
+    cursor.execute(updateCourseInfo_query, (
+        name, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, code
     ))
+    if not insertRequisites:
+        conn.commit()
+        return
+    try:
+        if (prereqsLink):
+            insertPrereqLinkQuery = 'INSERT INTO "_CoursePrerequisite" ("B", "A") VALUES '
+            for index, _ in enumerate(prereqsLink):
+                if (index == len(prereqsLink) - 1):
+                    insertPrereqLinkQuery += f'(\'{code}\', %s);'
+                else:
+                    insertPrereqLinkQuery += f'(\'{code}\', %s), '
+            cursor.execute(insertPrereqLinkQuery, tuple(prereqsLink))
+
+        if (antireqsLink):
+            insertAntireqLinkQuery = 'INSERT INTO "_CourseAntirequisite" ("B", "A") VALUES '
+            for index, _ in enumerate(antireqsLink):
+                if (index == len(antireqsLink) - 1):
+                    insertAntireqLinkQuery += f'(\'{code}\', %s);'
+                else:
+                    insertAntireqLinkQuery += f'(\'{code}\', %s), '
+            cursor.execute(insertAntireqLinkQuery, tuple(antireqsLink))
+
+        if (coreqsLink):
+            insertCoreqLinkQuery = 'INSERT INTO "_CourseCorequisite" ("B", "A") VALUES '
+            for index, _ in enumerate(coreqsLink):
+                if (index == len(coreqsLink) - 1):
+                    insertCoreqLinkQuery += f'(\'{code}\', %s);'
+                else:
+                    insertCoreqLinkQuery += f'(\'{code}\', %s), '
+
+            cursor.execute(insertCoreqLinkQuery, tuple(coreqsLink))
+
+        if (precoreqsLink):
+            insertPrecoreqLinkQuery = 'INSERT INTO "_CoursePrecorequisite" ("B", "A") VALUES '
+            for index, _ in enumerate(precoreqsLink):
+                if (index == len(precoreqsLink) - 1):
+                    insertPrecoreqLinkQuery += f'(\'{code}\', %s);'
+                else:
+                    insertPrecoreqLinkQuery += f'(\'{code}\', %s), '
+
+            cursor.execute(insertPrecoreqLinkQuery, tuple(precoreqsLink))
+    except Exception as e:
+        print(e)
+    conn.commit()
+
+
+def deleteRequisiteRows(cursor, conn):
+    deletePrereqQuery = f'DELETE FROM "_CoursePrerequisite"'
+    deleteAntireqQuery = f'DELETE FROM "_CourseAntirequisite"'
+    deleteCoreqQuery = f'DELETE FROM "_CourseCorequisite"'
+    deletePrecoreqQuery = f'DELETE FROM "_CoursePrecorequisite"'
+    cursor.execute(deletePrereqQuery)
+    cursor.execute(deleteAntireqQuery)
+    cursor.execute(deleteCoreqQuery)
+    cursor.execute(deletePrecoreqQuery)
+
     conn.commit()
 
 
