@@ -46,11 +46,13 @@ def addJsonToTable(cursor, conn, courseCode, columnName, data):
     conn.commit()
 
 
-def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, insertRequisites, conn, cursor):
+def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, desc, location, extra, conn, cursor):
+
     prereqJson = json.dumps(prereqs)
     antireqJson = json.dumps(antireqs)
     coreqJson = json.dumps(coreqs)
     precoreqJson = json.dumps(precoreqs)
+
 
 #  insert_query = f'INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);'
 
@@ -58,9 +60,14 @@ def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, p
     cursor.execute(updateCourseInfo_query, (
         name, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, code
     ))
-    if not insertRequisites:
-        conn.commit()
-        return
+    conn.commit()
+
+
+def insertRequisiteRows(code, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, conn, cursor):
+    prereqsLink = list(set(prereqsLink))
+    antireqsLink = list(set(antireqsLink))
+    coreqsLink = list(set(coreqsLink))
+    precoreqsLink = list(set(precoreqsLink))
     try:
         if (prereqsLink):
             insertPrereqLinkQuery = 'INSERT INTO "_CoursePrerequisite" ("B", "A") VALUES '
