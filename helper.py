@@ -117,6 +117,6 @@ def formatLink(link):
         cat = catName
     else:
         print(catName, newcode)
-        raise Exception("THIS FUCKIN ERROR AGAIN")
+        raise Exception("ERROR: category name does not exist")
     link = cat + " " + newcode
     return link
