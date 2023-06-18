@@ -2,11 +2,11 @@ import psycopg2
 import time
 from databaseFunctions import *
 from helper import *
-from scraper import scrapeFromAcademicCalendar
+from courseScraper import scrapeFromAcademicCalendar
 import pandas as pd
 import ast
 
-scrapeData = False
+scrapeData = True
 updateDB = False
 insertRequisites = False
 printData = False

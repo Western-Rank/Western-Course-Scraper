@@ -33,7 +33,16 @@ with open("western-course-scraper/catNameJson.json", "r") as json_file:
 
 def uploadCsvToDatabase(conn, cursor, insertRequisites=False):
     print("UPLOADING TO DATABASE")
+    fetchSetOfCourses()
     start = time.time()
+    # category upload
+    catCSV = pd.read_csv("western-course-scraper/cat_data.csv")
+    for index, category in catCSV.iterrows():
+        insertCategoryIntoDatabase(
+            category=category["category"], breadth=ast.literal_eval(category["breadth"]))
+    print("CATEGORIES UPLOADED")
+
+    # course upload
     courseCsv = pd.read_csv("western-course-scraper/course_data.csv")
     courseCsvLen = courseCsv.shape[0]
     for index, course in courseCsv.iterrows():
