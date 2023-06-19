@@ -57,10 +57,10 @@ def scrapeFromAcademicCalendar(startAt=0, endAt=len(catList)):
                 print(e)
         print(curCat, curCatName, catBreadth, index)
         catData.append([curCat, curCatName, catBreadth])
-    return
     catCSV = pd.DataFrame(
         catData, columns=['category_code', 'category_name', 'breadth'])
     catCSV.to_csv("western-course-scraper/cat_data.csv")
+    return
     coursesScraped = set()
     # scraping logic
     print("Scraping Courses")
