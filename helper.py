@@ -39,7 +39,7 @@ def uploadCsvToDatabase(conn, cursor, insertRequisites=False):
     catCSV = pd.read_csv("western-course-scraper/cat_data.csv")
     for index, category in catCSV.iterrows():
         insertCategoryIntoDatabase(
-            category=category["category"], breadth=ast.literal_eval(category["breadth"]))
+            categoryCode=category["category_code"], categoryName=category["category_name"], breadth=ast.literal_eval(category["breadth"]))
     print("CATEGORIES UPLOADED")
 
     # course upload

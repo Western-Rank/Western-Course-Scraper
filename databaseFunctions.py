@@ -57,9 +57,9 @@ def addJsonToTable(cursor, conn, courseCode, columnName, data):
     conn.commit()
 
 
-def insertCategoryIntoDatabase(category, breadth, conn, cursor):
-    insertCatQuery = "INSERT INTO \"Category\" (category_name, breadth) VALUES (%s, %s)"
-    cursor.execute(insertCatQuery, (category, breadth))
+def insertCategoryIntoDatabase(categoryCode, categoryName, breadth, conn, cursor):
+    insertCatQuery = "INSERT INTO \"Category\" (category_code, category_name, breadth) VALUES (%s, %s)"
+    cursor.execute(insertCatQuery, (categoryCode, categoryName, breadth))
     conn.commit()
 
 
