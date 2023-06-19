@@ -29,10 +29,10 @@ coursesCSV = pd.DataFrame(columns=[
 catData = []
 
 
-def addToCSV(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, weight, cat):
+def addToCSV(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, weight, category):
     global courseIndex
     coursesCSV.loc[courseIndex] = {"course_name": name, "course_code": code, "prerequisites_text": prereqs, "antirequisites_text": antireqs, "corequisites_text": coreqs, "precorequisites_text": precoreqs, "prerequisites_link": prereqsLink,
-                                   "antirequisites_link": antireqsLink, "corequisites_link": coreqsLink, "precorequisites_link": precoreqsLink, "description": desc, "location": location, "extra_info": extra, "weight": weight, "category": cat}
+                                   "antirequisites_link": antireqsLink, "corequisites_link": coreqsLink, "precorequisites_link": precoreqsLink, "description": desc, "location": location, "extra_info": extra, "weight": weight, "category": category}
     courseIndex += 1
 
 
@@ -42,18 +42,24 @@ def scrapeFromAcademicCalendar(startAt=0, endAt=len(catList)):
     basePage = requests.get(baseUrl)
     baseSoup = BeautifulSoup(basePage.text, "html.parser")
     table = baseSoup.find('tbody')
-    for catPanel in table.find_all("tr"):
+    for index, catPanel in enumerate(table.find_all("tr")):
         atag = catPanel.find_all("a")[0]
         catDiv = catPanel.find_all("td")[1]
         curCat = re.findall(r"Subject=(.*?)&", atag['href'])[0]
+        curCatName = atag.get_text().strip().replace("\n", "").replace("\r", "")
         catBreadth = ""
         try:
             catBreadth = re.findall(r"CATEGORY\s+(\w+)", catDiv.get_text())
-        except:
-            pass
-        print(curCat, catBreadth)
-        catData.append([curCat, catBreadth])
-    catCSV = pd.DataFrame(catData, columns=['category', 'breadth'])
+        except Exception as e:
+            if curCat == "HUMANIT":
+                catBreadth = ["B"]
+            else:
+                print(e)
+        print(curCat, curCatName, catBreadth, index)
+        catData.append([curCat, curCatName, catBreadth])
+    return
+    catCSV = pd.DataFrame(
+        catData, columns=['category_code', 'category_name', 'breadth'])
     catCSV.to_csv("western-course-scraper/cat_data.csv")
     coursesScraped = set()
     # scraping logic
@@ -180,7 +186,7 @@ def scrapeFromAcademicCalendar(startAt=0, endAt=len(catList)):
             newTitle = re.findall(namePattern, title)[
                 0] if re.findall(namePattern, title) else ""
             addToCSV(name=newTitle, code=code, prereqs=prereqs, antireqs=antireqs,
-                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=list(set(prereqsLink)), coreqsLink=list(set(coreqsLink)), antireqsLink=list(set(antireqsLink)), precoreqsLink=list(set(preAndCoreqsLink)), desc=desc, location=location, extra=extra, weight=weight, cat=cat)
+                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=list(set(prereqsLink)), coreqsLink=list(set(coreqsLink)), antireqsLink=list(set(antireqsLink)), precoreqsLink=list(set(preAndCoreqsLink)), desc=desc, location=location, extra=extra, weight=weight, category=cat)
     end = time.time()
     totTime = end-start
     print("DONE SCRAPING IN", totTime //
@@ -188,6 +194,3 @@ def scrapeFromAcademicCalendar(startAt=0, endAt=len(catList)):
 
     coursesCSV.to_csv("western-course-scraper/course_data.csv")
     print("WROTE TO CSV")
-
-
-scrapeFromAcademicCalendar()

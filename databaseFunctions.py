@@ -41,7 +41,7 @@ def fetchSetOfCourses(cursor, conn):
     global setOfCourses
     cursor.execute("SELECT course_code FROM Courses")
     # Fetch all the rows returned by the query
-    rows = cur.fetchall()
+    rows = cursor.fetchall()
     # Extract the "course_code" values into a list
     course_codes = [row[0] for row in rows]
     setOfCourses = set(course_codes)
