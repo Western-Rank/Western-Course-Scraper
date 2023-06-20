@@ -6,9 +6,10 @@ from courseScraper import scrapeFromAcademicCalendar
 import pandas as pd
 import ast
 
-scrapeData = True
-updateDB = False
+scrapeData = False
+updateDB = True
 insertRequisites = False
+insertCats = False
 printData = False
 
 if updateDB:
@@ -24,7 +25,7 @@ if insertRequisites and updateDB:
 
 if updateDB:
     uploadCsvToDatabase(insertRequisites=insertRequisites,
-                        conn=conn, cursor=cursor)
+                        insertCats=insertCats, conn=conn, cursor=cursor)
 
 # print results from certain course
 if printData:

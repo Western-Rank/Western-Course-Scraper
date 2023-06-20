@@ -47,19 +47,20 @@ def scrapeFromAcademicCalendar(startAt=0, endAt=len(catList)):
         catDiv = catPanel.find_all("td")[1]
         curCat = re.findall(r"Subject=(.*?)&", atag['href'])[0]
         curCatName = atag.get_text().strip().replace("\n", "").replace("\r", "")
-        catBreadth = ""
+        catBreadth = []
         try:
+            if curCat == "HUMANIT":
+                print("HIT FLAG")
+                catBreadth.append("B")
             catBreadth = re.findall(r"CATEGORY\s+(\w+)", catDiv.get_text())
         except Exception as e:
-            if curCat == "HUMANIT":
-                catBreadth = ["B"]
-            else:
-                print(e)
+            print(e)
         print(curCat, curCatName, catBreadth, index)
         catData.append([curCat, curCatName, catBreadth])
     catCSV = pd.DataFrame(
         catData, columns=['category_code', 'category_name', 'breadth'])
     catCSV.to_csv("western-course-scraper/cat_data.csv")
+    return
     coursesScraped = set()
     # scraping logic
     print("Scraping Courses")

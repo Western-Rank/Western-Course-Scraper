@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import psycopg2
+from psycopg2 import sql
 import os
 import json
 from pprint import pprint
@@ -39,7 +40,7 @@ errorCourses = """
 
 def fetchSetOfCourses(cursor, conn):
     global setOfCourses
-    cursor.execute("SELECT course_code FROM Courses")
+    cursor.execute("SELECT course_code FROM \"Course\"")
     # Fetch all the rows returned by the query
     rows = cursor.fetchall()
     # Extract the "course_code" values into a list
@@ -58,8 +59,11 @@ def addJsonToTable(cursor, conn, courseCode, columnName, data):
 
 
 def insertCategoryIntoDatabase(categoryCode, categoryName, breadth, conn, cursor):
-    insertCatQuery = "INSERT INTO \"Category\" (category_code, category_name, breadth) VALUES (%s, %s)"
-    cursor.execute(insertCatQuery, (categoryCode, categoryName, breadth))
+    # breadth = json.dumps(breadth)
+    # breadth = set(breadth)
+    array_literal = '{%s}' % ', '.join(breadth)
+    insertCatQuery = "INSERT INTO \"Category\" (category_code, category_name, breadth) VALUES (%s, %s, %s)"
+    cursor.execute(insertCatQuery, (categoryCode, categoryName, array_literal))
     conn.commit()
 
 
@@ -78,7 +82,7 @@ def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, d
         conn.commit()
     else:
         insertCourseQuery = """
-        INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info, category)
+        INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info, category_code)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(insertCourseQuery, (
