@@ -21,9 +21,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import json
+import time
 # Set up the web driver (replace 'chrome' with 'firefox' or 'edge' if using a different browser)
 driver = webdriver.Chrome()  # Make sure the web driver executable is in your PATH
-wait = WebDriverWait(driver, 10)  # Wait for elements to load
+wait = WebDriverWait(driver, 40)  # Wait for elements to load
 # Replace with the actual website URL
 website_url = "https://www.ratemyprofessors.com/search/professors/1491?q=*"
 driver.get(website_url)
@@ -39,6 +40,7 @@ try:
                     (By.XPATH, "//button[text()='Show More']"))
             )
             button.click()
+            time.sleep(2)
             count += 1
             if count == 728:
                 break
