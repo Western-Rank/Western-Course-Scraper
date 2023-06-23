@@ -50,7 +50,7 @@ def uploadCsvToDatabase(conn, cursor, insertRequisites=False, insertCats=False):
         if index % 50 == 0:
             print(index, "/", courseCsvLen, "COURSES UPLOADED")
         insertCourseIntoDatabase(name=course["course_name"], code=course["course_code"], prereqs=ast.literal_eval(course["prerequisites_text"]), antireqs=ast.literal_eval(course["antirequisites_text"]),
-                                 coreqs=ast.literal_eval(course["corequisites_text"]), precoreqs=ast.literal_eval(course["precorequisites_text"]), desc=course["description"], location=course["location"], extra=course["extra_info"], category=course["category"], conn=conn, cursor=cursor)
+                                 coreqs=ast.literal_eval(course["corequisites_text"]), precoreqs=ast.literal_eval(course["precorequisites_text"]), desc=course["description"], location=course["location"], extra=course["extra_info"], category=course["category"], level=course["level"], conn=conn, cursor=cursor)
     if insertRequisites:
         for index, course in courseCsv.iterrows():
             if index % 50 == 0:
@@ -61,6 +61,10 @@ def uploadCsvToDatabase(conn, cursor, insertRequisites=False, insertCats=False):
     totTime = end - start
     print("UPLOADED TO DATABASE IN", totTime //
           60, "MINUTES AND", round(totTime % 60, 2), "SECONDS")
+
+
+def getLevel(code):
+    return min(int(code[0]), 5)
 
 
 def databaseConnection():

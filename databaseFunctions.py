@@ -67,7 +67,7 @@ def insertCategoryIntoDatabase(categoryCode, categoryName, breadth, conn, cursor
     conn.commit()
 
 
-def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, desc, location, extra, category, conn, cursor):
+def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, desc, location, extra, category, level, conn, cursor):
 
     prereqJson = json.dumps(prereqs)
     antireqJson = json.dumps(antireqs)
@@ -75,18 +75,18 @@ def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, d
     precoreqJson = json.dumps(precoreqs)
 
     if code in setOfCourses:
-        updateCourseInfo_query = f'UPDATE "Course" SET course_name = %s, prerequisites_text = %s, antirequisites_text = %s, corequisites_text = %s, precorequisites_text = %s, description = %s, location = %s, extra_info = %s, category_code = %s WHERE course_code = %s;'
+        updateCourseInfo_query = f'UPDATE "Course" SET course_name = %s, prerequisites_text = %s, antirequisites_text = %s, corequisites_text = %s, precorequisites_text = %s, description = %s, location = %s, extra_info = %s, category_code = %s, level = %s WHERE course_code = %s;'
         cursor.execute(updateCourseInfo_query, (
-            name, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, category, code
+            name, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, category, level, code
         ))
         conn.commit()
     else:
         insertCourseQuery = """
-        INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info, category_code)
+        INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info, category_code, level)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
         cursor.execute(insertCourseQuery, (
-            name, code, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, category
+            name, code, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, category, level
         ))
         conn.commit()
 

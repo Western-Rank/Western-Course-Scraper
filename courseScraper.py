@@ -25,42 +25,42 @@ coursesCSV = pd.DataFrame(columns=[
     "location",
     "extra_info",
     "weight",
-    "category"])
+    "category",
+    "level"])
 catData = []
 
 
-def addToCSV(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, weight, category):
+def addToCSV(name, code, prereqs, antireqs, coreqs, precoreqs, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, desc, location, extra, weight, category, level):
     global courseIndex
     coursesCSV.loc[courseIndex] = {"course_name": name, "course_code": code, "prerequisites_text": prereqs, "antirequisites_text": antireqs, "corequisites_text": coreqs, "precorequisites_text": precoreqs, "prerequisites_link": prereqsLink,
-                                   "antirequisites_link": antireqsLink, "corequisites_link": coreqsLink, "precorequisites_link": precoreqsLink, "description": desc, "location": location, "extra_info": extra, "weight": weight, "category": category}
+                                   "antirequisites_link": antireqsLink, "corequisites_link": coreqsLink, "precorequisites_link": precoreqsLink, "description": desc, "location": location, "extra_info": extra, "weight": weight, "category": category, "level": level}
     courseIndex += 1
 
 
 def scrapeFromAcademicCalendar(startAt=0, endAt=len(catList)):
-    print("Scraping Categories")
-    baseUrl = 'https://www.westerncalendar.uwo.ca/Courses.cfm?SelectedCalendar=Live&ArchiveID='
-    basePage = requests.get(baseUrl)
-    baseSoup = BeautifulSoup(basePage.text, "html.parser")
-    table = baseSoup.find('tbody')
-    for index, catPanel in enumerate(table.find_all("tr")):
-        atag = catPanel.find_all("a")[0]
-        catDiv = catPanel.find_all("td")[1]
-        curCat = re.findall(r"Subject=(.*?)&", atag['href'])[0]
-        curCatName = atag.get_text().strip().replace("\n", "").replace("\r", "")
-        catBreadth = []
-        try:
-            if curCat == "HUMANIT":
-                print("HIT FLAG")
-                catBreadth.append("B")
-            catBreadth = re.findall(r"CATEGORY\s+(\w+)", catDiv.get_text())
-        except Exception as e:
-            print(e)
-        print(curCat, curCatName, catBreadth, index)
-        catData.append([curCat, curCatName, catBreadth])
-    catCSV = pd.DataFrame(
-        catData, columns=['category_code', 'category_name', 'breadth'])
-    catCSV.to_csv("western-course-scraper/cat_data.csv")
-    return
+    # print("Scraping Categories")
+    # baseUrl = 'https://www.westerncalendar.uwo.ca/Courses.cfm?SelectedCalendar=Live&ArchiveID='
+    # basePage = requests.get(baseUrl)
+    # baseSoup = BeautifulSoup(basePage.text, "html.parser")
+    # table = baseSoup.find('tbody')
+    # for index, catPanel in enumerate(table.find_all("tr")):
+    #     atag = catPanel.find_all("a")[0]
+    #     catDiv = catPanel.find_all("td")[1]
+    #     curCat = re.findall(r"Subject=(.*?)&", atag['href'])[0]
+    #     curCatName = atag.get_text().strip().replace("\n", "").replace("\r", "")
+    #     catBreadth = []
+    #     try:
+    #         if curCat == "HUMANIT":
+    #             print("HIT FLAG")
+    #             catBreadth.append("B")
+    #         catBreadth = re.findall(r"CATEGORY\s+(\w+)", catDiv.get_text())
+    #     except Exception as e:
+    #         print(e)
+    #     print(curCat, curCatName, catBreadth, index)
+    #     catData.append([curCat, curCatName, catBreadth])
+    # catCSV = pd.DataFrame(
+    #     catData, columns=['category_code', 'category_name', 'breadth'])
+    # catCSV.to_csv("western-course-scraper/cat_data.csv")
     coursesScraped = set()
     # scraping logic
     print("Scraping Courses")
@@ -181,12 +181,13 @@ def scrapeFromAcademicCalendar(startAt=0, endAt=len(catList)):
             if len(code) == 0:
                 code = re.findall(altPattern, title)
             code = code[0]
+            level = getLevel(code)
             code = cat + " " + code
             namePattern = re.compile(r"[0-9]{4}[A-Z/]*\s(.*)")
             newTitle = re.findall(namePattern, title)[
                 0] if re.findall(namePattern, title) else ""
             addToCSV(name=newTitle, code=code, prereqs=prereqs, antireqs=antireqs,
-                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=list(set(prereqsLink)), coreqsLink=list(set(coreqsLink)), antireqsLink=list(set(antireqsLink)), precoreqsLink=list(set(preAndCoreqsLink)), desc=desc, location=location, extra=extra, weight=weight, category=cat)
+                     coreqs=coreqs, precoreqs=preAndCoreqs, prereqsLink=list(set(prereqsLink)), coreqsLink=list(set(coreqsLink)), antireqsLink=list(set(antireqsLink)), precoreqsLink=list(set(preAndCoreqsLink)), desc=desc, location=location, extra=extra, weight=weight, category=cat, level=level)
     end = time.time()
     totTime = end-start
     print("DONE SCRAPING IN", totTime //
