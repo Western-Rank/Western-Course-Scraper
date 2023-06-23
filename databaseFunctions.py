@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import psycopg2
+from psycopg2 import sql
 import os
 import json
 from pprint import pprint
@@ -12,6 +13,7 @@ dbName = os.environ.get("DB_NAME")
 user = os.environ.get("DB_USER_NAME")
 password = os.environ.get("DB_PASSWORD")
 
+setOfCourses = {}
 
 errorCourses = """
 (AH 2634F/G)
@@ -36,6 +38,16 @@ errorCourses = """
 """
 
 
+def fetchSetOfCourses(cursor, conn):
+    global setOfCourses
+    cursor.execute("SELECT course_code FROM \"Course\"")
+    # Fetch all the rows returned by the query
+    rows = cursor.fetchall()
+    # Extract the "course_code" values into a list
+    course_codes = [row[0] for row in rows]
+    setOfCourses = set(course_codes)
+
+
 def addJsonToTable(cursor, conn, courseCode, columnName, data):
 
     # Convert the Python dictionary to a JSON string
@@ -46,21 +58,37 @@ def addJsonToTable(cursor, conn, courseCode, columnName, data):
     conn.commit()
 
 
-def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, desc, location, extra, conn, cursor):
+def insertCategoryIntoDatabase(categoryCode, categoryName, breadth, conn, cursor):
+    # breadth = json.dumps(breadth)
+    # breadth = set(breadth)
+    array_literal = '{%s}' % ', '.join(breadth)
+    insertCatQuery = "INSERT INTO \"Category\" (category_code, category_name, breadth) VALUES (%s, %s, %s)"
+    cursor.execute(insertCatQuery, (categoryCode, categoryName, array_literal))
+    conn.commit()
+
+
+def insertCourseIntoDatabase(name, code, prereqs, antireqs, coreqs, precoreqs, desc, location, extra, category, conn, cursor):
 
     prereqJson = json.dumps(prereqs)
     antireqJson = json.dumps(antireqs)
     coreqJson = json.dumps(coreqs)
     precoreqJson = json.dumps(precoreqs)
 
-
-#  insert_query = f'INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);'
-
-    updateCourseInfo_query = f'UPDATE "Course" SET course_name = %s, prerequisites_text = %s, antirequisites_text = %s, corequisites_text = %s, precorequisites_text = %s, description = %s, location = %s, extra_info = %s WHERE course_code = %s;'
-    cursor.execute(updateCourseInfo_query, (
-        name, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, code
-    ))
-    conn.commit()
+    if code in setOfCourses:
+        updateCourseInfo_query = f'UPDATE "Course" SET course_name = %s, prerequisites_text = %s, antirequisites_text = %s, corequisites_text = %s, precorequisites_text = %s, description = %s, location = %s, extra_info = %s, category_code = %s WHERE course_code = %s;'
+        cursor.execute(updateCourseInfo_query, (
+            name, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, category, code
+        ))
+        conn.commit()
+    else:
+        insertCourseQuery = """
+        INSERT INTO "Course" (course_name, course_code, prerequisites_text, antirequisites_text, corequisites_text, precorequisites_text, description, location, extra_info, category_code)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(insertCourseQuery, (
+            name, code, prereqJson, antireqJson, coreqJson, precoreqJson, desc, location, extra, category
+        ))
+        conn.commit()
 
 
 def insertRequisiteRows(code, prereqsLink, antireqsLink, coreqsLink, precoreqsLink, conn, cursor):

@@ -31,16 +31,26 @@ with open("western-course-scraper/catNameJson.json", "r") as json_file:
     mapCourseToCat = json.load(json_file)
 
 
-def uploadCsvToDatabase(conn, cursor, insertRequisites=False):
+def uploadCsvToDatabase(conn, cursor, insertRequisites=False, insertCats=False):
     print("UPLOADING TO DATABASE")
+    fetchSetOfCourses(conn=conn, cursor=cursor)
     start = time.time()
+    # category upload
+    if insertCats:
+        catCSV = pd.read_csv("western-course-scraper/cat_data.csv")
+        for index, category in catCSV.iterrows():
+            print(index, "Categories Uploaded")
+            insertCategoryIntoDatabase(
+                categoryCode=category["category_code"], categoryName=category["category_name"], breadth=ast.literal_eval(category["breadth"]), conn=conn, cursor=cursor)
+        print("CATEGORIES UPLOADED")
+    # course upload
     courseCsv = pd.read_csv("western-course-scraper/course_data.csv")
     courseCsvLen = courseCsv.shape[0]
     for index, course in courseCsv.iterrows():
         if index % 50 == 0:
             print(index, "/", courseCsvLen, "COURSES UPLOADED")
         insertCourseIntoDatabase(name=course["course_name"], code=course["course_code"], prereqs=ast.literal_eval(course["prerequisites_text"]), antireqs=ast.literal_eval(course["antirequisites_text"]),
-                                 coreqs=ast.literal_eval(course["corequisites_text"]), precoreqs=ast.literal_eval(course["precorequisites_text"]), desc=course["description"], location=course["location"], extra=course["extra_info"], conn=conn, cursor=cursor)
+                                 coreqs=ast.literal_eval(course["corequisites_text"]), precoreqs=ast.literal_eval(course["precorequisites_text"]), desc=course["description"], location=course["location"], extra=course["extra_info"], category=course["category"], conn=conn, cursor=cursor)
     if insertRequisites:
         for index, course in courseCsv.iterrows():
             if index % 50 == 0:
