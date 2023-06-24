@@ -1,6 +1,6 @@
 .env
-.json
-.csv
+*.json
+*.csv
 
 Include
 Lib
