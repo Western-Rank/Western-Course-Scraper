@@ -1,6 +1,14 @@
+# Environment variables
 .env
+
+# Text files
 *.json
 *.csv
+*.txt
+
+# Executables
+*.exe
+*.chromedriver
 
 Include
 Lib
