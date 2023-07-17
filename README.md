@@ -19,7 +19,10 @@ course_name,
   precorequisites_link,
   description,
   location,
-  extra_info;
+  extra_info,
+  weight,
+  category,
+  level;
 ```
 
 ## Usage
