@@ -6,8 +6,8 @@ from courseScraper import scrapeFromAcademicCalendar
 import pandas as pd
 import ast
 
-scrapeData = False
-updateDB = True
+scrapeData = True
+updateDB = False
 insertRequisites = False
 insertCats = False
 printData = False
