@@ -1,8 +1,10 @@
 # Western Course Scraper
 
-Python script to scrape all UWO courses on the academic calendar.
+Python script to scrape:
+- All UWO courses on the academic calendar.
+- All UWO professors from RateMyProf
 
-## Output
+## Output (Course Scraper)
 
 Output of script(s) is a `.csv` file in the following format:
 
@@ -25,9 +27,21 @@ course_name,
   level;
 ```
 
+## Output (Prof Scraper)
+
+Output of script(s) is a `.csv` file in the following format:
+
+```js
+professor_id, professor_name;
+```
+
 ## Usage
 
 All necessary packages can be installed with `pip install -r requirements.txt`.
+
+### Course Scraper
+
+### Course Scraper
 
 1. Run `main.py` with the `scrapeData = True` flag set, this will write out all scraped data to `course_data.csv`.
 
