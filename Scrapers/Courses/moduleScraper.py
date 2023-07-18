@@ -36,11 +36,13 @@ def scrapeModule(url):
     name = modName.get_text().strip().replace(
         "\n", "").replace("\r", "")
     print("\t", name)
-    admission = modSoup.find(id="AdmissionRequirements").find_all("p")
-    strong = [match for match in [strong.get_text()
-                                  for strong in admission[0].find_all("strong")] if ".0" in match][0]
-    print(strong.strip().replace(
-        "\n", "").replace("\r", ""))
+    admissionRequirementsText = modSoup.find(
+        id="AdmissionRequirements").get_text()
+    moduleReqs = modSoup.find(class_="moduleInfo")
+    for div in moduleReqs:
+        print(div.get_text().strip().replace(
+            "\n", "").replace("\r", ""))
+        print("GAPOPP")
 
 
 scrapeAllModules()
